@@ -26,8 +26,6 @@ def load_sprite_from_file(filename):
 				data = zipFile.get_file(f).read()
 				new_entity.data = json.loads(data.decode())
 				SPRITE[new_entity.data["ID"]] = new_entity
-				
-				
 
 def load_sprite_from_folder(path = '.'):
 	logging.info("Chargement des sprites...")

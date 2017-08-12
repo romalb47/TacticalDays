@@ -11,13 +11,21 @@ class Entity(pygame.sprite.Sprite):
 		self.data = ""
 
 		self.image = surface
+		self.alternate = []
 
 		self.rect = self.image.get_rect()
+		
+		self.pos = [0, 0]
 	
 	def copy(self):
 		new = Entity(self.image.copy())
 		new.data = self.data
 		return new
+		
+	def setpos(self, x, y):
+		self.pos = [x, y]
+		self.rect.x = x*32
+		self.rect.y = y*32
 
 class Sprite(pygame.sprite.Sprite):
 
@@ -27,6 +35,7 @@ class Sprite(pygame.sprite.Sprite):
 		self.data = ""
 
 		self.image = surface
+		self.alternate = []
 
 		self.rect = self.image.get_rect()
 
