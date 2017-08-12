@@ -2,8 +2,8 @@ TacticalDays
 
 Classes d'unité:
 
-- Infanterie
-- Infanterie_LD #Longue Distance
-- Mobile_Leger
-- Mobile_Lourd
-- Transport
+- Inf    #Infanterie
+- Inf_LD #Longue Distance
+- VL     #Véhicule_Leger
+- PL     #Poid_Lourd
+- Tr     #Transport
