@@ -29,7 +29,7 @@ def load_sprite_from_file(filename):
 				
 
 def load_sprite_from_folder(path = '.'):
-	
+	logging.info("Chargement des sprites...")
 	liste = sorted(pathlib.Path(path).glob('*.szip'))
 	for entry in liste:
 		logging.info("Ouverture de "+str(entry.name))
@@ -44,16 +44,17 @@ def load_entity_from_file(filename):
 			img = f[:-4] + "png"
 			if img in zipFile.file_list: # Et qu'il y a une ressource associé
 				surface = zipFile.get_texture(img)
-				new_entity = entity.Sprite(surface)
-				new_entity.data = json.load(zipFile.get_file(f))
+				new_entity = entity.Entity(surface)
+				data = zipFile.get_file(f).read()
+				new_entity.data = json.loads(data.decode())
 				ENTITY[new_entity.data["ID"]] = new_entity
-				
+				logging.info("Chargement de "+str(new_entity.data["ID"]))
 
 def load_entity_from_folder(path = '.'):
-	
+	logging.info("Chargement des entitées...")
 	liste = sorted(pathlib.Path(path).glob('*.ezip'))
 	for entry in liste:
 		logging.info("Ouverture de "+str(entry.name))
-		load_sprite_from_file(str(entry))
+		load_entity_from_file(str(entry))
 	
 	

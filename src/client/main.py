@@ -27,8 +27,11 @@ def init_graph():
 	logging.info("Initialisation de pygame...")
 	Screen = pygame.display.set_mode( config.CFG["screen.size"] )
 	
+	pygame.key.set_repeat(100, 20)
+	
 	logging.info("Chargement des ressources...")
 	ressource.load_sprite_from_folder("data")
+	ressource.load_entity_from_folder("data")
 	
 	return(Screen)
 	
@@ -45,7 +48,7 @@ if __name__ == "__main__":
 	
 	
 	logging.info("Lancement du jeu...")
-	game.run(Display)
+	game.run(Display, "base")
 	
 	
 	
