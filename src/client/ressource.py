@@ -20,12 +20,13 @@ def load_sprite_from_file(filename):
 		if f.endswith(".json"): # Si fini par json
 			img = f[:-4] + "png"
 			if img in zipFile.file_list: # Et qu'il y a une ressource associé
+				logging.info("Chargement de "+str(f))
 				surface = zipFile.get_texture(img)
 				new_entity = entity.Sprite(surface)
 				data = zipFile.get_file(f).read()
 				new_entity.data = json.loads(data.decode())
 				SPRITE[new_entity.data["ID"]] = new_entity
-				logging.info("Chargement de "+str(new_entity.data["ID"]))
+				
 				
 
 def load_sprite_from_folder(path = '.'):
@@ -43,12 +44,12 @@ def load_entity_from_file(filename):
 		if f.endswith(".json"): # Si fini par json
 			img = f[:-4] + "png"
 			if img in zipFile.file_list: # Et qu'il y a une ressource associé
+				logging.info("Chargement de "+str(f))
 				surface = zipFile.get_texture(img)
 				new_entity = entity.Entity(surface)
 				data = zipFile.get_file(f).read()
 				new_entity.data = json.loads(data.decode())
 				ENTITY[new_entity.data["ID"]] = new_entity
-				logging.info("Chargement de "+str(new_entity.data["ID"]))
 
 def load_entity_from_folder(path = '.'):
 	logging.info("Chargement des entitées...")
