@@ -1,3 +1,4 @@
 {
-    "screen.size": [640, 480]
+    "screen.size": [640, 480],
+    "screen.fps": 30
 }
