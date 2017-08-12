@@ -5,12 +5,25 @@ import pygame
 
 class Entity(pygame.sprite.Sprite):
 
-    def __init__(self, surface):
-       pygame.sprite.Sprite.__init__(self)
+	def __init__(self, surface):
+		pygame.sprite.Sprite.__init__(self)
+		
+		self.data = ""
 
-       self.image = surface
+		self.image = surface
 
-       self.rect = self.image.get_rect()
+		self.rect = self.image.get_rect()
+
+class Sprite(pygame.sprite.Sprite):
+
+	def __init__(self, surface):
+		pygame.sprite.Sprite.__init__(self)
+		
+		self.data = ""
+
+		self.image = surface
+
+		self.rect = self.image.get_rect()
 
 
 class EntityGroup(pygame.sprite.Group):

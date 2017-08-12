@@ -1,13 +1,57 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-
-
 import pygame, time
 from pygame.locals import *
 import random
+import logging
 
-import res_zip
+import config
+import game
+import ressource
+
+def init_game():
+	"""Initialisation de la partie applicative"""
+		
+	logging.basicConfig(level=logging.DEBUG)
+
+	logging.info("Chargement de la configuration...")
+	config.load_config("config.json")
+	
+	
+def init_graph():
+	"""Initialisation de la partie graphique"""
+	
+	pygame.init() # Initialisation de pygame
+	
+	logging.info("Initialisation de pygame...")
+	Screen = pygame.display.set_mode( config.CFG["screen.size"] )
+	
+	logging.info("Chargement des ressources...")
+	ressource.load_sprite_from_folder("data")
+	
+	return(Screen)
+	
+
+
+if __name__ == "__main__":
+	"""Tâche principale"""
+	
+	SpritesList = []
+	
+	init_game()
+
+	Display = init_graph()
+	
+	
+	logging.info("Lancement du jeu...")
+	game.run(Display)
+	
+	
+	
+
+"""
+
 
 pygame.init()
 
@@ -114,3 +158,4 @@ while continuer:
 	pygame.display.flip()
 	fenetre.fill(0)
 	time.sleep(0.05)
+"""
