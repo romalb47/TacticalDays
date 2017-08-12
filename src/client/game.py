@@ -27,8 +27,8 @@ def run(Display, map_name):
 	SpriteGroup = entity.EntityGroup()
 	
 	SpriteGroup.add( ressource.ENTITY[1].copy() )
-	a = ressource.ENTITY[2].copy()
-	a = a.move(128, 128)
+	a = ressource.ENTITY[3].copy()
+	a.rect.move_ip(128, 128)
 	SpriteGroup.add( a )
 
 	GameRun = True

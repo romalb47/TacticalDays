@@ -19,9 +19,6 @@ class Entity(pygame.sprite.Sprite):
 		new.data = self.data
 		return new
 
-	def move(self, x, y):
-		self.rect = self.rect.move(x, y)
-
 class Sprite(pygame.sprite.Sprite):
 
 	def __init__(self, surface):
