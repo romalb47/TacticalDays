@@ -4,6 +4,7 @@
 import config
 import maps
 import ressource
+import entity
 
 from pygame.locals import *
 import pygame
@@ -23,12 +24,16 @@ def run(Display, map_name):
 
 	Scheduler = pygame.time.Clock()
 
+	SpriteGroup = entity.EntityGroup()
+	
+	SpriteGroup.add( ressource.ENTITY[50].copy() )
+
 	GameRun = True
 	while GameRun:
 		
 		for event in pygame.event.get():	#Attente des événements
 			if event.type == MOUSEMOTION:
-				pos_curs = event.pos
+				pos_curs = event.pos				
 			if event.type == QUIT:
 				GameRun = False
 			if event.type == KEYDOWN:
@@ -41,6 +46,15 @@ def run(Display, map_name):
 				if event.key == K_DOWN:
 					Pos_Ecran_Actuelle[1] += 3
 
+		if pos_curs[0] < 10:
+			Pos_Ecran_Actuelle[0] -= 3
+		if pos_curs[0] > config.CFG["screen.size"][0]-10:
+			Pos_Ecran_Actuelle[0] += 3
+		if pos_curs[1] < 10:
+			Pos_Ecran_Actuelle[1] -= 3
+		if pos_curs[1] > config.CFG["screen.size"][1]-10:
+			Pos_Ecran_Actuelle[1] += 3
+
 		y=0
 		while y < Map_Data["size"][1]:
 			x=0
@@ -50,8 +64,12 @@ def run(Display, map_name):
 
 				x += 1
 			y +=1
+		
+		
+		SpriteGroup.draw(Maps_Surface)
+		
 				
-		Pos_inversé = (Pos_Ecran_Actuelle[0], Pos_Ecran_Actuelle[1])
+		Pos_inversé = (-Pos_Ecran_Actuelle[0], -Pos_Ecran_Actuelle[1])
 		Display.blit(Maps_Surface, Pos_inversé)
 		
 		Scheduler.tick_busy_loop(int(config.CFG["screen.fps"]))

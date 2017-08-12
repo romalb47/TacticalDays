@@ -13,6 +13,11 @@ class Entity(pygame.sprite.Sprite):
 		self.image = surface
 
 		self.rect = self.image.get_rect()
+	
+	def copy(self):
+		new = Entity(self.image.copy())
+		new.data = self.data
+		return new
 
 class Sprite(pygame.sprite.Sprite):
 
@@ -27,6 +32,16 @@ class Sprite(pygame.sprite.Sprite):
 
 
 class EntityGroup(pygame.sprite.Group):
-	
+	pass
+"""		
 	def __init__(self):
-		pygame.sprite.Group.__init__(self)
+		self.sprite = []
+		
+	
+	def add(self, sprite):
+		self.sprite.append(sprite)
+		
+	def draw(self, surface):
+		for s in self.sprite:
+			surface.blit(s.image, s.rect)
+"""
