@@ -3,56 +3,112 @@
 
 import pygame, time
 from pygame.locals import *
+import random
 
 import res_zip
 
 pygame.init()
 
-#Ouverture de la fenêtre Pygame
-fenetre = pygame.display.set_mode((640, 480))
+pygame.key.set_repeat(100, 100)
+pygame.mouse.set_visible(False)
 
-pygame.key.set_repeat(400, 30)
+fenetre = pygame.display.set_mode( (640, 480) )
+
+Nbr_Bloc_x = 640/16
+Nbr_Bloc_y = 480/16
 
 Fichier_texture = res_zip.ressourceFile("res.zip")
 
-#Chargement et collage du fond
-fond = Fichier_texture.get_texture("res/background.jpg").convert()
-fenetre.blit(fond, (0,0))
+textures = []
 
-#Chargement et collage du personnage
-perso = Fichier_texture.get_texture("res/perso.png").convert_alpha()
-position_perso = perso.get_rect()
-fenetre.blit(perso, position_perso)
+curseur = Fichier_texture.get_texture("res/curseur.png").convert_alpha()
 
-#Rafraîchissement de l'écran
-pygame.display.flip()
+textures.append( Fichier_texture.get_texture("res/pierre.png").convert_alpha() )
+textures.append( Fichier_texture.get_texture("res/sable.png").convert_alpha() )
+textures.append( Fichier_texture.get_texture("res/terre.png").convert_alpha() )
 
-debut = time.time()
-cpt = 0
+pika = Fichier_texture.get_texture("res/pika.png").convert_alpha()
+coord_pika = pika.get_rect()
+chat = Fichier_texture.get_texture("res/chat.png").convert_alpha()
+coord_chat = chat.get_rect()
+coord_chat = coord_chat.move(16*39, 16*28)
 
+carte = []
+y=0
+while y < Nbr_Bloc_y:
+	x=0
+	carte.append([])
+	while x < Nbr_Bloc_x:
+		ordre_texture = random.randint(0, len(textures)-1 )
+		carte[y].append(ordre_texture)
+		x += 1
+	y +=1
+
+compteur = 0
+pos_curs = (640, 480)
 #BOUCLE INFINIE
 continuer = 1
 while continuer:
 	for event in pygame.event.get():	#Attente des événements
+		if event.type == MOUSEMOTION:
+			print (str(event.pos))
+			pos_curs = event.pos
 		if event.type == QUIT:
 			continuer = 0
 		if event.type == KEYDOWN:
-			if event.key == K_DOWN:	#Si "flèche bas"
-				#On descend le perso
-				position_perso = position_perso.move(0,3)
-			if event.key == K_UP:
-				#On descend le perso
-				position_perso = position_perso.move(0,-3)
-			if event.key == K_RIGHT:
-				#On descend le perso
-				position_perso = position_perso.move(3,0)
 			if event.key == K_LEFT:
-				#On descend le perso
-				position_perso = position_perso.move(-3,0)
+				coord_pika = coord_pika.move(-16, 0)
+			if event.key == K_RIGHT:
+				coord_pika = coord_pika.move(16, 0)
+			if event.key == K_UP:
+				coord_pika = coord_pika.move(0, -16)
+			if event.key == K_DOWN:
+				coord_pika = coord_pika.move(0, 16)
+			if event.key == K_q:
+				coord_chat = coord_chat.move(-16, 0)
+			if event.key == K_d:
+				coord_chat = coord_chat.move(16, 0)
+			if event.key == K_z:
+				coord_chat = coord_chat.move(0, -16)
+			if event.key == K_s:
+				coord_chat = coord_chat.move(0, 16)
+
+	if compteur > 3:	
+		compteur = 0	
+		if coord_chat.x > coord_pika.x:
+			coord_chat = coord_chat.move(-16, 0)
+		if coord_chat.x < coord_pika.x:
+			coord_chat = coord_chat.move(16, 0)
+		if coord_chat.y > coord_pika.y:
+			coord_chat = coord_chat.move(0, -16)
+		if coord_chat.y < coord_pika.y:
+			coord_chat = coord_chat.move(0, 16)
+				
+	compteur += 1			
 	
-	#Re-collage
-	fenetre.blit(fond, (0,0))	
-	fenetre.blit(perso, position_perso)
+	# Code d'affichage!
+	
+	
+	y=0
+	while y < Nbr_Bloc_y:
+		x=0
+		while x < Nbr_Bloc_x:
+			ordre_texture = carte[y][x]
+			
+			fenetre.blit(textures[ordre_texture], (x*16, y*16))
+
+			x += 1
+		y +=1
+	
+	
+	fenetre.blit(chat, coord_chat)
+	fenetre.blit(pika, coord_pika)
+
+	fenetre.blit(curseur, pos_curs)
+	
+	# ----------
+	
 	#Rafraichissement
 	pygame.display.flip()
-	cpt += 1
+	fenetre.fill(0)
+	time.sleep(0.05)
