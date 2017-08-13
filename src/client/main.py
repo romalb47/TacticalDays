@@ -9,6 +9,8 @@ import logging
 import config
 import game
 import ressource
+import maps_edit
+
 
 def init_game():
 	"""Initialisation de la partie applicative"""
@@ -39,16 +41,18 @@ def init_graph():
 
 if __name__ == "__main__":
 	"""Tâche principale"""
-	
-	SpritesList = []
-	
+		
 	init_game()
 
 	Display = init_graph()
 	
 	
 	logging.info("Lancement du jeu...")
-	game.run(Display, "base")
+	
+	
+	maps_edit.run(Display, "test1", (25, 25))
+
+#	game.run(Display, "base")
 	
 	
 	
