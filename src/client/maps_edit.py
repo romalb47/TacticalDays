@@ -11,6 +11,7 @@ import pygame
 
 
 def run(Display, map_name, size):
+	import logging
 	
 	Map_Data = maps.new_maps(size)
 
@@ -67,10 +68,8 @@ def run(Display, map_name, size):
 						bloc_x = (Pos_Ecran_Actuelle[0] + clic_x) // 32
 						bloc_y = (Pos_Ecran_Actuelle[1] + clic_y) // 32
 						Id = int(ListeSprite[Texture_Séléctionné]["id"])
-						print(str(Map_Data["data"][bloc_y][bloc_x]))
-
 						Map_Data["data"][bloc_y][bloc_x] = Id
-						print("Bloc cliqué: %s %s %s"%(bloc_x, bloc_y, Id))
+						logging.debug("Bloc cliqué: %s %s %s"%(bloc_x, bloc_y, Id))
 						
 			
 			if event.type == QUIT:

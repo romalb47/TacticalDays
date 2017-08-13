@@ -50,9 +50,9 @@ if __name__ == "__main__":
 	logging.info("Lancement du jeu...")
 	
 	
-	maps_edit.run(Display, "test1", (25, 25))
+	maps_edit.run(Display, "test1", (30, 30))
 
-#	game.run(Display, "base")
+#	game.run(Display, "test1")
 	
 	
 	

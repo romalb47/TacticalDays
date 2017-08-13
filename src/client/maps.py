@@ -26,6 +26,13 @@ def save_map(name, carte):
 def new_maps(size):
 	a = {}
 	a["size"] = list(size)
-	a["data"] = size[1]*[size[0]*[10013]]
+	new_list = []
+	
+	for i in range(0, size[1]):
+		new_list.append([])
+		for j in range(0, size[0]):
+			new_list[i].append(10013)
+	
+	a["data"] = new_list
 	
 	return(a)
