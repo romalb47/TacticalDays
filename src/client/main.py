@@ -5,6 +5,7 @@ import pygame, time
 from pygame.locals import *
 import random
 import logging
+import sys, os
 
 import config
 import game
@@ -46,11 +47,14 @@ if __name__ == "__main__":
 
 	Display = init_graph()
 	
-	
 	logging.info("Lancement du jeu...")
 	
+	if len(sys.argv) == 4:
+		map_name = sys.argv[1]
+	else:
+		map_name = "carte1"
 	
-	maps_edit.run(Display, "test1", (30, 30))
+	maps_edit.run(Display, map_name, (int(sys.argv[2]), int(sys.argv[3])))
 
 #	game.run(Display, "test1")
 	

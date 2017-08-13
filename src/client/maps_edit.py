@@ -19,6 +19,8 @@ def run(Display, map_name, size):
 
 	Size = (size[0]*32, size[1]*32)
 	
+	Default_Sprite = entity.Sprite(pygame.Surface((32, 32)))
+	
 	ScreenSize = Display.get_rect()
 
 	Maps_Surface = pygame.Surface(Size)
@@ -73,39 +75,40 @@ def run(Display, map_name, size):
 						
 			
 			if event.type == QUIT:
+				maps.save_map(map_name, Map_Data)
 				GameRun = False
 			if event.type == KEYDOWN:
 				if event.key == K_LEFT:
-					Pos_Ecran_Actuelle[0] -= 3
+					Pos_Ecran_Actuelle[0] -= 15
 				if event.key == K_RIGHT:
-					Pos_Ecran_Actuelle[0] += 3
+					Pos_Ecran_Actuelle[0] += 15
 				if event.key == K_UP:
-					Pos_Ecran_Actuelle[1] -= 3
+					Pos_Ecran_Actuelle[1] -= 15
 				if event.key == K_DOWN:
-					Pos_Ecran_Actuelle[1] += 3
+					Pos_Ecran_Actuelle[1] += 15
 				if event.key == K_s:
 					maps.save_map(map_name, Map_Data)
 
 		if pos_curs[0] < 10:
-			Pos_Ecran_Actuelle[0] -= 3
+			Pos_Ecran_Actuelle[0] -= 5
 		if pos_curs[0] > config.CFG["screen.size"][0]-10:
-			Pos_Ecran_Actuelle[0] += 3
+			Pos_Ecran_Actuelle[0] += 5
 		if pos_curs[1] < 10:
-			Pos_Ecran_Actuelle[1] -= 3
+			Pos_Ecran_Actuelle[1] -= 5
 		if pos_curs[1] > config.CFG["screen.size"][1]-10:
-			Pos_Ecran_Actuelle[1] += 3
+			Pos_Ecran_Actuelle[1] += 5
+
 
 		y=0
-		while y < Map_Data["size"][1]:
-			x=0
-			while x < Map_Data["size"][0]:
-				sprite = ressource.SPRITE[ Map_Data["data"][y][x] ]
+		for y in range(0, Map_Data["size"][1]):
+			for x in range(0, Map_Data["size"][0]):
+				try:
+					sprite = ressource.SPRITE[ Map_Data["data"][y][x] ]
+				except Exception:
+					sprite = Default_Sprite
+				
 				Maps_Surface.blit(sprite.image, (x*32, y*32))
-
-				x += 1
-			y +=1
-		
-		
+				
 		SpriteGroup.draw(Maps_Surface)
 		
 		Pos_inversé = (-Pos_Ecran_Actuelle[0], -Pos_Ecran_Actuelle[1])
