@@ -76,8 +76,11 @@ def run(Display, map_name, size):
 						bloc_x = (Pos_Ecran_Actuelle[0] + clic_x) // 32
 						bloc_y = (Pos_Ecran_Actuelle[1] + clic_y) // 32
 						Id = int(ListeSprite[Texture_Séléctionné]["id"])
-						Map_Data["data"][bloc_y][bloc_x] = Id
-						logging.debug("Bloc cliqué: %s %s %s"%(bloc_x, bloc_y, Id))
+						if bloc_y>=0 and bloc_y<len(Map_Data["data"]):
+							if bloc_x>=0 and bloc_x<len(Map_Data["data"][bloc_y]):
+								Map_Data["data"][bloc_y][bloc_x] = Id
+							logging.debug("Bloc cliqué: %s %s %s"%(bloc_x, bloc_y, Id))
+							
 				if event.button == 2:
 					clic_x = event.pos[0]
 					clic_y = event.pos[1]
@@ -90,7 +93,6 @@ def run(Display, map_name, size):
 							if Id == ListeSprite[i]["id"]:
 								Texture_Séléctionné = i
 								logging.debug("Bloc pipette: %s %s %s %s"%(bloc_x, bloc_y, Id, Texture_Séléctionné))
-						
 			
 			if event.type == QUIT:
 				maps.save_map(map_name, Map_Data)
