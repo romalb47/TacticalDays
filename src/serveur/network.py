@@ -1,28 +1,45 @@
 #!/usr/bin/env python3
 # coding: utf-8 
 
-import multiprocessing
+import threading
 import socket, select
 from multiprocessing import Pipe
 import json
 import time
 
 import classe
+import instance
 import login
+import matchmaking
 
 
-def Data_packet_decode(logger, data, Joueur):
+def network_packet_decode(logger, data, Joueur, sock, pipe):
 	packet_data = json.loads(data.decode("utf-8"))
 	logger.debug("Données reçu: %s", packet_data)
 			
 	if packet_data["cmd"] == "login":
 		if not login.do_login(logger, Joueur, packet_data):
-			time.sleep(3)
 			Joueur.login_error += 1
 			logger.debug("Erreur de login %s", Joueur.login_error)
+			sock.sendall(json.dumps({"cmd":"login", "status":"error"}).encode("utf-8"))
 			if Joueur.login_error>5:
 				return False
+		else:
+			sock.sendall(json.dumps({"cmd":"login", "status":"ok"}).encode("utf-8"))
+
+	else:
+		pipe.send(packet_data)
 	
+	
+	return True
+	
+def pipe_packet_decode(logger, data, sock):
+	if data["cmd"] == "close":
+		return False
+		
+	sock.sendall( json.dumps(data).encode("utf-8") )
+	return True
+
 
 def handle(connection, address, pipe, Joueur):
 	import logging
@@ -56,29 +73,32 @@ def handle(connection, address, pipe, Joueur):
 						data_in_waiting += data
 					
 					if data_complete:
-						if not Data_packet_decode(logger, data_in_waiting, Joueur):
+						if not network_packet_decode(logger, data_in_waiting, Joueur, connection, pipe):
 							running = False
 							break
-
-
-					#connection.sendall(data)
-										
+							
 				if to_read == pipe:
-					pass
+					if not pipe_packet_decode(logger, pipe.recv(), sock):
+						running = False
+						break
+
+			if pipe.closed:
+				running = False
 				
 	except:
 		logger.exception("Probleme de requete")
 	finally:
 		logger.debug("Fermeture de la socket")
+		Joueur.islogin = False
+		pipe.close()
 		connection.close()
 
 class Server(object):
-	def __init__(self, hostname, port, Joueur_connecté):
+	def __init__(self, hostname, port):
 		import logging
 		self.logger = logging.getLogger("server")
 		self.hostname = hostname
 		self.port = port
-		self.Joueur_connecté = Joueur_connecté
 
 	def start(self):
 		self.logger.debug("Ecoute port "+ str(self.hostname) +":"+ str(self.port))
@@ -87,6 +107,11 @@ class Server(object):
 		self.socket.bind((self.hostname, self.port))
 		self.socket.listen(1)
 
+		matchmaking_process = threading.Thread(target=matchmaking.run)
+		matchmaking_process.daemon = True
+		matchmaking_process.start()
+		self.logger.debug("Processus matchmaker démarré %r", matchmaking_process)
+		
 		while True:
 			conn, address = self.socket.accept()
 			self.logger.debug("Connection entrante")
@@ -96,9 +121,9 @@ class Server(object):
 			
 			Nouveau_Joueur = classe.Joueur(parent_conn)
 			
-			self.Joueur_connecté.append(Nouveau_Joueur)
+			matchmaking.JOUEUR_CONNECTE.append(Nouveau_Joueur) # Mise a dispo du nouveau joueur pour le thread de matchmaking
 			
-			process = multiprocessing.Process(target=handle, args=(conn, address, child_conn, Nouveau_Joueur))
+			process = threading.Thread(target=handle, args=(conn, address, child_conn, Nouveau_Joueur))
 			process.daemon = True
 			process.start()
 			self.logger.debug("Processus fils démarré %r", process)

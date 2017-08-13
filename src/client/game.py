@@ -6,12 +6,14 @@ import maps
 import ressource
 import entity
 import divers
+import logging
 
 from pygame.locals import *
 import pygame
+import time
 
 
-def run(Display, map_name):
+def run(Display, network, map_name):
 	
 	Map_Data = maps.load_map(map_name)
 
@@ -31,7 +33,7 @@ def run(Display, map_name):
 	Scheduler = pygame.time.Clock()
 
 	SpriteGroup = entity.EntityGroup()
-	
+
 	temp = ressource.ENTITY[1].copy()
 	temp.setpos(1, 1)
 	SpriteGroup.add( temp )
@@ -51,15 +53,57 @@ def run(Display, map_name):
 	temp = ressource.ENTITY[5].copy()
 	temp.setpos(7, 5)
 	SpriteGroup.add( temp )
+	
+	logging.info("Tentative de connection...")
+	
+	network.login("romalb47", "12345")
+	
+	while True:
+		network.process_pipe()
+		if network.loginok:
+			break
+		time.sleep(0.1)
+	
+	logging.info("Connection ok...")
+	
+	network.join_room("serdtfyugiohjpk")
+	
+	logging.info("Lancement de la bouble principale...")
 
-
+	Sprite_cliqué = False
 	GameRun = True
 	while GameRun:
 		
 		for event in pygame.event.get():	#Attente des événements
 			if event.type == MOUSEMOTION:
-				pos_curs = event.pos				
+				pos_curs = event.pos
+			if event.type == MOUSEBUTTONDOWN:
+				if event.button == 1:
+					clic_x = event.pos[0]
+					clic_y = event.pos[1]
+					bloc_x = (Pos_Ecran_Actuelle[0] + clic_x) // 32
+					bloc_y = (Pos_Ecran_Actuelle[1] + clic_y) // 32
+					Sprite_cliqué = False
+					for sprite in SpriteGroup:
+						sprite_x = sprite.rect.x//32
+						sprite_y = sprite.rect.y//32
+						if sprite_x==bloc_x and sprite_y==bloc_y:
+							Sprite_cliqué = sprite.uuid
+							logging.debug("Entitée cliqué: %s %s %s"%(bloc_x, bloc_y, Sprite_cliqué))
+							break
+				if event.button == 3:
+					clic_x = event.pos[0]
+					clic_y = event.pos[1]
+					bloc_x = (Pos_Ecran_Actuelle[0] + clic_x) // 32
+					bloc_y = (Pos_Ecran_Actuelle[1] + clic_y) // 32
+					for sprite in SpriteGroup:
+						if sprite.uuid==Sprite_cliqué:
+							sprite.setpos(bloc_x, bloc_y)
+							logging.debug("Entitée déplacé: %s %s %s"%(bloc_x, bloc_y, Sprite_cliqué))
+							break
+							
 			if event.type == QUIT:
+				logging.info("Demande de fermeture...")
 				GameRun = False
 			if event.type == KEYDOWN:
 				if event.key == K_LEFT:
@@ -100,7 +144,11 @@ def run(Display, map_name):
 		Pos_inversé = (-Pos_Ecran_Actuelle[0], -Pos_Ecran_Actuelle[1])
 		Display.blit(Maps_Surface, Pos_inversé)
 		
+		if network.pipe_has_data():
+			network.process_pipe()
+		
 		Scheduler.tick_busy_loop(int(config.CFG["screen.fps"]))
+
 		pygame.display.flip()
 		Maps_Surface.fill(0)
 		Display.fill(0)

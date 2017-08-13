@@ -5,12 +5,13 @@ import pygame, time
 from pygame.locals import *
 import random
 import logging
-import sys, os
+import sys, os, multiprocessing
 
 import config
 import game
 import ressource
 import maps_edit
+import network
 
 
 def init_game():
@@ -52,13 +53,21 @@ if __name__ == "__main__":
 	if len(sys.argv) > 1 :
 		map_name = sys.argv[1]
 	else:
-		map_name = "carte1"
+		map_name = "pierre"
 	
 	maps_edit.run(Display, map_name, (int(sys.argv[2]), int(sys.argv[3])))
 
-#	game.run(Display, map_name)
+
+	
+#	logging.info("Connection...")
+#	net = network.network_conn("localhost", 9000)
+
+#	game.run(Display, net, map_name)
 	
 	
+#	net.close()
+
+	logging.info("Jeux fini!")
 	
 
 """

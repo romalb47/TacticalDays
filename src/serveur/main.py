@@ -13,9 +13,7 @@ if __name__ == "__main__":
 	import logging
 	logging.basicConfig(level=logging.DEBUG)
 	
-	Joueur_connecté = [] # Structure principale stockant les joueur en attente
-	
-	server = network.Server("0.0.0.0", 9000, Joueur_connecté)
+	server = network.Server("0.0.0.0", 9000)
 	try:
 		logging.info("Démarrage du serveur")
 		server.start()

@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import pygame
+import random
 
 class Entity(pygame.sprite.Sprite):
 
@@ -9,6 +10,8 @@ class Entity(pygame.sprite.Sprite):
 		pygame.sprite.Sprite.__init__(self)
 		
 		self.data = ""
+		
+		self.uuid = random.randint(0, 999999999999)
 
 		self.image = surface
 		self.alternate = []

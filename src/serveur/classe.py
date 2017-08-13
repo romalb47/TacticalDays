@@ -6,4 +6,7 @@ class Joueur():
 		self.tcp_pipe = pipe
 		self.uuid = 0
 		self.name = ""
+		self.islogin = False
 		self.login_error = 0
+		self.in_room = 0
+		self.instance = 0

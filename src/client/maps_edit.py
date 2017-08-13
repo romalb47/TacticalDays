@@ -136,6 +136,11 @@ def run(Display, map_name, size):
 		
 		Display.blit(Menu_Surface, Pos_Menu_Surface)
 		
+		Pos_x = ScreenSize.width - Menu_Width*32 + ((Texture_Séléctionné%Menu_Width) * 32)
+		Pos_y = (Texture_Séléctionné//Menu_Width) * 32
+		
+		Display.blit(ressource.SPRITE[ 200 ].image, (Pos_x, Pos_y))
+		
 		Scheduler.tick_busy_loop(int(config.CFG["screen.fps"]))
 		pygame.display.flip()
 		Maps_Surface.fill(0)
