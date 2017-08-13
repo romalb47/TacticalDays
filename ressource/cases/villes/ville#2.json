@@ -1,0 +1,23 @@
+{"ID" : 10022,
+
+"dep.Inf" : 1,
+"couv.Inf" : 3,
+"fog.Inf" : 1,
+
+"dep.Inf_LD" : 1,
+"couv.Inf_LD" : 3,
+"fog.Inf_LD" : 1,
+
+"dep.VL" : 1,
+"couv.VL" : 3,
+"fog.VL" : 1,
+
+"dep.PL" : 1,
+"couv.PL" : 3,
+"fog.PL" : 1,
+
+"dep.Tr" : 1,
+"couv.VL" : 3,
+"fog.VL" : 1,
+
+}
