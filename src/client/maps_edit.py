@@ -13,7 +13,11 @@ import pygame
 def run(Display, map_name, size):
 	import logging
 	
-	Map_Data = maps.new_maps(size)
+	
+	Map_Data = maps.load_map(map_name)
+	
+	if Map_Data == False:
+		Map_Data = maps.new_maps(size)
 
 	Pos_Ecran_Actuelle = [0, 0]
 

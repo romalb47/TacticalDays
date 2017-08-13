@@ -8,10 +8,11 @@ import config
 
 
 def load_map(name):
-	
-	with open("maps/" + name + ".json", "r") as f:
-		data = json.load(f)
-		
+	try:
+		with open("maps/" + name + ".json", "r") as f:
+			data = json.load(f)
+	except Exception:
+		return False
 	return data
 	
 	
