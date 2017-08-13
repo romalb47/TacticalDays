@@ -54,9 +54,9 @@ if __name__ == "__main__":
 	else:
 		map_name = "carte1"
 	
-#	maps_edit.run(Display, map_name, (int(sys.argv[2]), int(sys.argv[3])))
+	maps_edit.run(Display, map_name, (int(sys.argv[2]), int(sys.argv[3])))
 
-	game.run(Display, map_name)
+#	game.run(Display, map_name)
 	
 	
 	
