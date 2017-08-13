@@ -21,6 +21,8 @@ def run(Display, map_name):
 	Maps_Surface = pygame.Surface(Size)
 
 	pos_curs = (0, 0)
+	
+	Default_Sprite = entity.Sprite(pygame.Surface((32, 32)))
 
 	Scheduler = pygame.time.Clock()
 
@@ -75,14 +77,15 @@ def run(Display, map_name):
 			Pos_Ecran_Actuelle[1] += 3
 
 		y=0
-		while y < Map_Data["size"][1]:
-			x=0
-			while x < Map_Data["size"][0]:
-				sprite = ressource.SPRITE[ Map_Data["data"][y][x] ]
+		for y in range(0, Map_Data["size"][1]):
+			for x in range(0, Map_Data["size"][0]):
+				try:
+					sprite = ressource.SPRITE[ Map_Data["data"][y][x] ]
+				except Exception:
+					sprite = Default_Sprite
+				
 				Maps_Surface.blit(sprite.image, (x*32, y*32))
 
-				x += 1
-			y +=1
 		
 		
 		SpriteGroup.draw(Maps_Surface)

@@ -26,6 +26,8 @@ def load_sprite_from_file(filename):
 					new_entity = entity.Sprite(surface)
 					data = zipFile.get_file(f).read()
 					new_entity.data = json.loads(data.decode())
+					if new_entity.data["ID"] in SPRITE:
+						logging.error("Recouvrement de l'id %s par %s"%(new_entity.data["ID"], f))
 					SPRITE[new_entity.data["ID"]] = new_entity
 				except Exception:
 					logging.error("Erreur de chargement de "+str(f))
@@ -53,6 +55,8 @@ def load_entity_from_file(filename):
 					new_entity = entity.Entity(surface)
 					data = zipFile.get_file(f).read()
 					new_entity.data = json.loads(data.decode())
+					if new_entity.data["ID"] in ENTITY:
+						logging.error("Recouvrement de l'id %s par %s"%(new_entity.data["ID"], f))
 					ENTITY[new_entity.data["ID"]] = new_entity
 				except Exception:
 					logging.error("Erreur de chargement de "+str(f))
