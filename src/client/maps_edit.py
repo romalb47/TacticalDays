@@ -5,9 +5,11 @@ import config
 import maps
 import ressource
 import entity
+import divers
 
 from pygame.locals import *
 import pygame
+
 
 
 def run(Display, map_name, size):
@@ -84,10 +86,10 @@ def run(Display, map_name, size):
 						bloc_x = (Pos_Ecran_Actuelle[0] + clic_x) // 32
 						bloc_y = (Pos_Ecran_Actuelle[1] + clic_y) // 32
 						Id = Map_Data["data"][bloc_y][bloc_x]
-						for i in range(0, len(ListeSprite)-1):
+						for i in range(0, len(ListeSprite)):
 							if Id == ListeSprite[i]["id"]:
 								Texture_Séléctionné = i
-						logging.debug("Bloc pipette: %s %s %s"%(bloc_x, bloc_y, Id))
+								logging.debug("Bloc pipette: %s %s %s %s"%(bloc_x, bloc_y, Id, Texture_Séléctionné))
 						
 			
 			if event.type == QUIT:
@@ -95,7 +97,8 @@ def run(Display, map_name, size):
 				GameRun = False
 			if event.type == KEYDOWN:
 				if event.key == K_LEFT:
-					Pos_Ecran_Actuelle[0] -= 15
+					if divers.is_in_range(Pos_Ecran_Actuelle, Size):
+						Pos_Ecran_Actuelle[0] -= 15
 				if event.key == K_RIGHT:
 					Pos_Ecran_Actuelle[0] += 15
 				if event.key == K_UP:
