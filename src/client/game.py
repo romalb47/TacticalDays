@@ -5,6 +5,7 @@ import config
 import maps
 import ressource
 import entity
+import divers
 
 from pygame.locals import *
 import pygame
@@ -19,8 +20,11 @@ def run(Display, map_name):
 	Size = (Map_Data["size"][0]*32, Map_Data["size"][1]*32)
 
 	Maps_Surface = pygame.Surface(Size)
+	
+	ScreenSize = Display.get_rect()
+	Menu_Width = 0
 
-	pos_curs = (0, 0)
+	pos_curs = (50, 50)
 	
 	Default_Sprite = entity.Sprite(pygame.Surface((32, 32)))
 
@@ -59,22 +63,24 @@ def run(Display, map_name):
 				GameRun = False
 			if event.type == KEYDOWN:
 				if event.key == K_LEFT:
-					Pos_Ecran_Actuelle[0] -= 3
+					divers.move_screen(Pos_Ecran_Actuelle, Size, ScreenSize, Menu_Width*32, (-15, 0))
 				if event.key == K_RIGHT:
-					Pos_Ecran_Actuelle[0] += 3
+					divers.move_screen(Pos_Ecran_Actuelle, Size, ScreenSize, Menu_Width*32, (15, 0))
 				if event.key == K_UP:
-					Pos_Ecran_Actuelle[1] -= 3
+					divers.move_screen(Pos_Ecran_Actuelle, Size, ScreenSize, Menu_Width*32, (0, -15))
 				if event.key == K_DOWN:
-					Pos_Ecran_Actuelle[1] += 3
+					divers.move_screen(Pos_Ecran_Actuelle, Size, ScreenSize, Menu_Width*32, (0, 15))
+				if event.key == K_s:
+					maps.save_map(map_name, Map_Data)
 
 		if pos_curs[0] < 10:
-			Pos_Ecran_Actuelle[0] -= 3
+			divers.move_screen(Pos_Ecran_Actuelle, Size, ScreenSize, Menu_Width*32, (-5, 0))
 		if pos_curs[0] > config.CFG["screen.size"][0]-10:
-			Pos_Ecran_Actuelle[0] += 3
+			divers.move_screen(Pos_Ecran_Actuelle, Size, ScreenSize, Menu_Width*32, (5, 0))
 		if pos_curs[1] < 10:
-			Pos_Ecran_Actuelle[1] -= 3
+			divers.move_screen(Pos_Ecran_Actuelle, Size, ScreenSize, Menu_Width*32, (0, -5))
 		if pos_curs[1] > config.CFG["screen.size"][1]-10:
-			Pos_Ecran_Actuelle[1] += 3
+			divers.move_screen(Pos_Ecran_Actuelle, Size, ScreenSize, Menu_Width*32, (0, 5))
 
 		y=0
 		for y in range(0, Map_Data["size"][1]):

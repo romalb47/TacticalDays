@@ -4,13 +4,14 @@
 import json
 
 import config
-
+import logging
 
 
 def load_map(name):
 	try:
 		with open("maps/" + name + ".json", "r") as f:
 			data = json.load(f)
+			logging.info("Chargements de la carte "+str(name))
 	except Exception:
 		return False
 	return data
@@ -20,6 +21,7 @@ def save_map(name, carte):
 	
 	with open("maps/" + name + ".json", "w") as f:
 		data = json.dump(carte, f, indent=4)
+		logging.info("Sauvegarde de la carte "+str(name))
 		
 	return True
 	

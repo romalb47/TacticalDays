@@ -49,14 +49,14 @@ if __name__ == "__main__":
 	
 	logging.info("Lancement du jeu...")
 	
-	if len(sys.argv) == 4:
+	if len(sys.argv) > 1 :
 		map_name = sys.argv[1]
 	else:
 		map_name = "carte1"
 	
-	maps_edit.run(Display, map_name, (int(sys.argv[2]), int(sys.argv[3])))
+#	maps_edit.run(Display, map_name, (int(sys.argv[2]), int(sys.argv[3])))
 
-#	game.run(Display, "test1")
+	game.run(Display, map_name)
 	
 	
 	
