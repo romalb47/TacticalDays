@@ -18,6 +18,7 @@ import entity
 class CPlayer():
 	def __init__(self, uuid):
 		self.uuid = uuid
+		self.name = ""
 		self.Entity = entity.EntityGroup()
 
 
@@ -31,10 +32,12 @@ class network_conn():
 		self.loginok = False
 		self.room_joined = False
 		self.mqtt = mqtt.Client()
+		self.name = ""
 		self.pipe = start(self.address, self.port)
 		self.Player_list = {}
 	
 	def login(self, login, password):
+		self.name = login
 		temp = password + str(int(time.time()/10))
 		passwd = hashlib.sha224(temp.encode("utf-8")).hexdigest()
 		packet = {"cmd":"login", "user":login, "pwd":passwd}
@@ -48,8 +51,9 @@ class network_conn():
 		self.logger.info("MQTT Connected!")
 		self.logger.info("MQTT Subscrib to %s", self.room_uuid)
 		self.mqtt.subscribe(self.room_uuid)
-		self.mqtt.publish(self.room_uuid, '{ "info":"player_connected", "uuid":"%s" }'%(self.player_uuid, )) # Envoi d'un message sur le salon prevenant de mon arrivée
+		self.mqtt.publish(self.room_uuid, '{ "info":"player_connected", "uuid":"%s", "name":"%s" }'%(self.player_uuid, self.name)) # Envoi d'un message sur le salon prevenant de mon arrivée
 		self.Player_list[self.player_uuid] = CPlayer(self.player_uuid) # Création du joueur en lui meme
+		self.Player_list[self.player_uuid].name = self.name
 		self.room_joined = True
 		
 	def _mqtt_on_message(self, client, userdata, msg):
@@ -58,21 +62,28 @@ class network_conn():
 		
 		if "info" in data:
 			if data["info"] == "player_connected":
-				self.mqtt.publish(self.room_uuid, '{ "info":"player_present", "uuid":"%s" }'%(self.player_uuid, ))
+				self.mqtt.publish(self.room_uuid, '{ "info":"player_present", "uuid":"%s", "name":"%s"}'%(self.player_uuid, self.Player_list[self.player_uuid].name))
 			if data["info"] == "player_present":
 				if data["uuid"] not in self.Player_list:
-					self.logger.debug("Ajout d'un joueur: %s", data["uuid"])
+					self.logger.debug("Ajout d'un joueur: %s t(%s)", data["name"], data["uuid"])
 					self.Player_list[data["uuid"]] = CPlayer(data["uuid"])
+					self.Player_list[data["uuid"]].name = data["name"]
 		if "cmd" in data:
 			if data["cmd"] == "entity_move":
-				for Player in self.Player_list.values():
-					for Entity in Player.Entity:
-						if Entity.uuid == data["entity"]: #TODO Vérifié que le mouvement est valide
-#							if Player == self.Player_list[self.player_uuid]:
-#								break
-							self.logger.debug("R: Deplacement de %s a %s", data["entity"], data["pos"])
-							Entity.setpos(*data["pos"])
-
+				if data["from"] != self.player_uuid: #TODO Vérifié que le mouvement est valide
+					for Player in self.Player_list.values():
+						for Entity in Player.Entity:
+							if Entity.uuid == data["entity"]: #TODO Vérifié que le mouvement est valide
+								if Player == self.Player_list[self.player_uuid]:
+									self.logger.debug("Tentative de deplacement de mon unité %s de %s", data["entity"], self.Player_list[data["from"]].name)
+									break
+								self.logger.debug("R: Deplacement de %s a %s", data["entity"], data["pos"])
+								Entity.setpos(*data["pos"])
+			if data["cmd"] == "entity_create":
+				New_Entity = ressource.ENTITY[data["ID"]].copy(data["entity"])
+				New_Entity.setpos(*data["pos"])
+				self.Player_list[data["from"]].Entity.add(New_Entity)
+				self.logger.debug("R: Création de l'entité %s a %s appartenant a %s", data["entity"], data["pos"], self.Player_list[data["from"]].name)
 
 	def move_entity(self, entity, pos=(0, 0)):
 		for Player in self.Player_list.values():
@@ -83,9 +94,7 @@ class network_conn():
 					Entity.setpos(pos[0], pos[1])
 		
 	def create_entity(self, ID, Joueur_uuid, Entity_uuid="", pos=(0, 0)):
-		New_Entity = ressource.ENTITY[ID].copy(Entity_uuid)
-		New_Entity.setpos(pos[0], pos[1])
-		self.Player_list[Joueur_uuid].Entity.add(New_Entity)
+		self.mqtt.publish(self.room_uuid, '{ "cmd":"entity_create", "from":"%s", "entity":"%s", "ID": %s, "pos": [%s, %s] }'%(Joueur_uuid, Entity_uuid, ID, pos[0], pos[1])) # Envoi de la création
 		
 		
 	def process_pipe(self):

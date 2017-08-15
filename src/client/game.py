@@ -54,8 +54,8 @@ def run(Display, network, map_name):
 			break
 		time.sleep(0.1)
 
-	network.create_entity(1, network.player_uuid, "uuid_test1", (random.randint(0, 10), random.randint(0, 10)))
-	network.create_entity(1, network.player_uuid, "uuid_test2", (random.randint(0, 10), random.randint(0, 10)))
+	network.create_entity(1, network.player_uuid, UUID.uuid4(), (random.randint(0, 10), random.randint(0, 10)))
+	network.create_entity(1, network.player_uuid, UUID.uuid4(), (random.randint(0, 10), random.randint(0, 10)))
 
 	
 	logging.info("Lancement de la bouble principale...")
