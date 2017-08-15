@@ -23,12 +23,17 @@ def run(): # Récupere les pipe des client et demarre les instances a la demande
 				if data["cmd"] == "join_room":
 					room_uuid = data["uuid"]
 					room_pwd = data["pwd"]
+					
+					
 					for Instance in INSTANCE_JEU:
 						if room_uuid == Instance.uuid and room_pwd == Instance.password:
 							logger.info("Transfere de %s dans l'instance %s"%(Joueur.name, room_uuid))
 							Joueur.in_room = room_uuid
 							Joueur.instance = Instance
 							Instance.add(Joueur)
+							
+							Joueur.tcp_pipe.send({"cmd":"join_room", "status":"ok", "server":("192.168.40.236", 1883), "topic":Instance.mqtt_topic})
+							
 							break
 					
 					if not Joueur.in_room:
@@ -38,6 +43,8 @@ def run(): # Récupere les pipe des client et demarre les instances a la demande
 						Joueur.instance = nouvelle_instance
 						nouvelle_instance.add(Joueur)
 						INSTANCE_JEU.append(nouvelle_instance)
+						Joueur.tcp_pipe.send({"cmd":"join_room", "status":"ok", "server":("192.168.40.236", 1883), "topic":nouvelle_instance.mqtt_topic})
+
 	
 		time.sleep(1)
 

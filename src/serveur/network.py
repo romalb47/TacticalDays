@@ -25,7 +25,7 @@ def network_packet_decode(logger, data, Joueur, sock, pipe):
 			if Joueur.login_error>5:
 				return False
 		else:
-			sock.sendall(json.dumps({"cmd":"login", "status":"ok"}).encode("utf-8"))
+			sock.sendall(json.dumps({"cmd":"login", "status":"ok", "uuid":Joueur.uuid}).encode("utf-8"))
 
 	else:
 		pipe.send(packet_data)
@@ -38,6 +38,7 @@ def pipe_packet_decode(logger, data, sock):
 		return False
 		
 	sock.sendall( json.dumps(data).encode("utf-8") )
+	logger.debug("Send data %s", data)
 	return True
 
 
@@ -78,7 +79,7 @@ def handle(connection, address, pipe, Joueur):
 							break
 							
 				if to_read == pipe:
-					if not pipe_packet_decode(logger, pipe.recv(), sock):
+					if not pipe_packet_decode(logger, pipe.recv(), connection):
 						running = False
 						break
 

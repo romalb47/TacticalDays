@@ -7,6 +7,8 @@ import ressource
 import entity
 import divers
 import logging
+import random
+import uuid as UUID
 
 from pygame.locals import *
 import pygame
@@ -31,28 +33,6 @@ def run(Display, network, map_name):
 	Default_Sprite = entity.Sprite(pygame.Surface((32, 32)))
 
 	Scheduler = pygame.time.Clock()
-
-	SpriteGroup = entity.EntityGroup()
-
-	temp = ressource.ENTITY[1].copy()
-	temp.setpos(1, 1)
-	SpriteGroup.add( temp )
-	
-	temp = ressource.ENTITY[2].copy()
-	temp.setpos(2, 9)
-	SpriteGroup.add( temp )
-	
-	temp = ressource.ENTITY[3].copy()
-	temp.setpos(9, 5)
-	SpriteGroup.add( temp )
-	
-	temp = ressource.ENTITY[4].copy()
-	temp.setpos(5, 7)
-	SpriteGroup.add( temp )
-	
-	temp = ressource.ENTITY[5].copy()
-	temp.setpos(7, 5)
-	SpriteGroup.add( temp )
 	
 	logging.info("Tentative de connection...")
 	
@@ -67,6 +47,16 @@ def run(Display, network, map_name):
 	logging.info("Connection ok...")
 	
 	network.join_room("serdtfyugiohjpk")
+	
+	while True:
+		network.process_pipe()
+		if network.room_joined:
+			break
+		time.sleep(0.1)
+
+	network.create_entity(1, network.player_uuid, "uuid_test1", (random.randint(0, 10), random.randint(0, 10)))
+	network.create_entity(1, network.player_uuid, "uuid_test2", (random.randint(0, 10), random.randint(0, 10)))
+
 	
 	logging.info("Lancement de la bouble principale...")
 
@@ -84,23 +74,23 @@ def run(Display, network, map_name):
 					bloc_x = (Pos_Ecran_Actuelle[0] + clic_x) // 32
 					bloc_y = (Pos_Ecran_Actuelle[1] + clic_y) // 32
 					Sprite_cliqué = False
-					for sprite in SpriteGroup:
-						sprite_x = sprite.rect.x//32
-						sprite_y = sprite.rect.y//32
-						if sprite_x==bloc_x and sprite_y==bloc_y:
-							Sprite_cliqué = sprite.uuid
-							logging.debug("Entitée cliqué: %s %s %s"%(bloc_x, bloc_y, Sprite_cliqué))
-							break
+					for Player in network.Player_list.values():
+						for sprite in Player.Entity:
+							sprite_x = sprite.rect.x//32
+							sprite_y = sprite.rect.y//32
+							if sprite_x==bloc_x and sprite_y==bloc_y:
+								Sprite_cliqué = sprite
+								logging.debug("Entitée cliqué: %s %s %s"%(bloc_x, bloc_y, Sprite_cliqué))
+								break
 				if event.button == 3:
 					clic_x = event.pos[0]
 					clic_y = event.pos[1]
 					bloc_x = (Pos_Ecran_Actuelle[0] + clic_x) // 32
 					bloc_y = (Pos_Ecran_Actuelle[1] + clic_y) // 32
-					for sprite in SpriteGroup:
-						if sprite.uuid==Sprite_cliqué:
-							sprite.setpos(bloc_x, bloc_y)
-							logging.debug("Entitée déplacé: %s %s %s"%(bloc_x, bloc_y, Sprite_cliqué))
-							break
+					if Sprite_cliqué:
+						network.move_entity(Sprite_cliqué, (bloc_x, bloc_y))
+						logging.debug("Entitée déplacé: %s %s %s"%(bloc_x, bloc_y, Sprite_cliqué))
+
 							
 			if event.type == QUIT:
 				logging.info("Demande de fermeture...")
@@ -137,8 +127,8 @@ def run(Display, network, map_name):
 				Maps_Surface.blit(sprite.image, (x*32, y*32))
 
 		
-		
-		SpriteGroup.draw(Maps_Surface)
+		for Player in network.Player_list.values():
+			Player.Entity.draw(Maps_Surface)
 		
 				
 		Pos_inversé = (-Pos_Ecran_Actuelle[0], -Pos_Ecran_Actuelle[1])

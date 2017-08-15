@@ -6,12 +6,12 @@ import random
 
 class Entity(pygame.sprite.Sprite):
 
-	def __init__(self, surface):
+	def __init__(self, surface, uuid = ""):
 		pygame.sprite.Sprite.__init__(self)
 		
 		self.data = ""
 		
-		self.uuid = random.randint(0, 999999999999)
+		self.uuid = str(uuid)
 
 		self.image = surface
 		self.alternate = []
@@ -20,8 +20,8 @@ class Entity(pygame.sprite.Sprite):
 		
 		self.pos = [0, 0]
 	
-	def copy(self):
-		new = Entity(self.image.copy())
+	def copy(self, uuid):
+		new = Entity(self.image.copy(), uuid)
 		new.data = self.data
 		return new
 		

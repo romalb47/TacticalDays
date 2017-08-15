@@ -55,18 +55,17 @@ if __name__ == "__main__":
 	else:
 		map_name = "pierre"
 	
-	maps_edit.run(Display, map_name, (int(sys.argv[2]), int(sys.argv[3])))
+#	maps_edit.run(Display, map_name, (int(sys.argv[2]), int(sys.argv[3])))
 
 
 	
-#	logging.info("Connection...")
-#	net = network.network_conn("localhost", 9000)
+	logging.info("Connection...")
+	net = network.network_conn("localhost", 9000)
 
-#	game.run(Display, net, map_name)
+	game.run(Display, net, map_name)
 	
 	
-#	net.close()
-
+	net.close()
 	logging.info("Jeux fini!")
 	
 

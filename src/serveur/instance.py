@@ -2,6 +2,7 @@
 # coding: utf-8 
 
 from multiprocessing import Lock
+import uuid as UUID
 
 class instance_game():
 	
@@ -9,6 +10,7 @@ class instance_game():
 		self.lock = Lock()
 		self.joueur_actif = []
 		self.uuid = uuid
+		self.mqtt_topic = "tacticaldays/" + str(UUID.uuid4())
 		self.password = password
 		
 		

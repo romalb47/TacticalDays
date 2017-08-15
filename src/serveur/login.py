@@ -3,6 +3,7 @@
 
 import json
 import hashlib, time
+import uuid as UUID
 
 def do_login(logger, Joueur, packet):
 	
@@ -16,7 +17,7 @@ def do_login(logger, Joueur, packet):
 		if passwd == packet["pwd"]:
 			Joueur.name = packet["user"]
 			Joueur.islogin = True
-			Joueur.uuid = "secdvfbyuiopvz15"
+			Joueur.uuid = str(UUID.uuid4())
 			logger.debug("Login OK %s, UUID=%s", Joueur.name, Joueur.uuid)
 			return True
 
