@@ -9,6 +9,7 @@ import logging
 import hashlib
 import select
 import random
+import uuid as UUID
 import paho.mqtt.client as mqtt
 from multiprocessing import Pipe
 
@@ -21,40 +22,43 @@ class CPlayer():
 		self.name = ""
 		self.Entity = entity.EntityGroup()
 
-
 class network_conn():
 	
-	def __init__(self, address, port=9000):
+	def __init__(self, server):
 		self.logger = logging.getLogger("network")
-		self.address = address
-		self.port = port
-		self.player_uuid = ""
+		self.server = server
+		self.player_uuid = str(UUID.uuid4())
+		self.topic = "tacticaldays/"
 		self.loginok = False
-		self.room_joined = False
-		self.mqtt = mqtt.Client()
+		self.room_joined =  False
+		self.room_uuid = ""
 		self.name = ""
-		self.pipe = start(self.address, self.port)
 		self.Player_list = {}
+		self.mqtt = mqtt.Client()
+#		self.mqtt.enable_logger(logging.getLogger("MQTT"))
 	
-	def login(self, login, password):
+	def login(self, login="", password=""):
+		if login != "":
+			self.mqtt.username_pw_set(username=login,password=password)
 		self.name = login
-		temp = password + str(int(time.time()/10))
-		passwd = hashlib.sha224(temp.encode("utf-8")).hexdigest()
-		packet = {"cmd":"login", "user":login, "pwd":passwd}
-		self.pipe.send(packet)
-		
-	def join_room(self, room_uuid, passwd=""):
-		packet = {"cmd":"join_room", "uuid":room_uuid, "pwd":passwd}
-		self.pipe.send(packet)
-		
+		self.mqtt.on_connect = self._mqtt_on_connect
+		self.mqtt.on_message = self._mqtt_on_message
+		self.logger.debug("MQTT Connection lancée: %s %s", self.server[0], self.server[1])
+		self.mqtt.connect_async(self.server[0], self.server[1], 60)
+		self.logger.info("Starting MQTT loop")
+		self.mqtt.loop_start()
+
+	def close(self):
+		self.mqtt.disconnect()
+		self.mqtt.loop_stop()
+
 	def _mqtt_on_connect(self, client, userdata, flags, rc):
-		self.logger.info("MQTT Connected!")
-		self.logger.info("MQTT Subscrib to %s", self.room_uuid)
-		self.mqtt.subscribe(self.room_uuid)
-		self.mqtt.publish(self.room_uuid, '{ "info":"player_connected", "uuid":"%s", "name":"%s" }'%(self.player_uuid, self.name)) # Envoi d'un message sur le salon prevenant de mon arrivée
-		self.Player_list[self.player_uuid] = CPlayer(self.player_uuid) # Création du joueur en lui meme
-		self.Player_list[self.player_uuid].name = self.name
-		self.room_joined = True
+		if rc == 0:
+			self.logger.info("MQTT Connected!")
+			self.loginok = True
+		else:
+			self.logger.error("MQTT Erreur de connection! (%s)", rc)
+			self.loginok = False
 		
 	def _mqtt_on_message(self, client, userdata, msg):
 		data = json.loads(msg.payload.decode("utf-8"))
@@ -70,15 +74,14 @@ class network_conn():
 					self.Player_list[data["uuid"]].name = data["name"]
 		if "cmd" in data:
 			if data["cmd"] == "entity_move":
-				if data["from"] != self.player_uuid: #TODO Vérifié que le mouvement est valide
-					for Player in self.Player_list.values():
-						for Entity in Player.Entity:
-							if Entity.uuid == data["entity"]: #TODO Vérifié que le mouvement est valide
-								if Player == self.Player_list[self.player_uuid]:
-									self.logger.debug("Tentative de deplacement de mon unité %s de %s", data["entity"], self.Player_list[data["from"]].name)
-									break
-								self.logger.debug("R: Deplacement de %s a %s", data["entity"], data["pos"])
-								Entity.setpos(*data["pos"])
+				for Player in self.Player_list.values():
+					for Entity in Player.Entity:
+						if Entity.uuid == data["entity"]: #TODO Vérifié que le mouvement est valide
+							#if Player == self.Player_list[self.player_uuid]:
+								#self.logger.debug("Tentative de deplacement de mon unité %s de %s", data["entity"], self.Player_list[data["from"]].name)
+								#break
+							self.logger.debug("R: Deplacement de %s a %s", data["entity"], data["pos"])
+							Entity.setpos(*data["pos"])
 			if data["cmd"] == "entity_create":
 				New_Entity = ressource.ENTITY[data["ID"]].copy(data["entity"])
 				New_Entity.setpos(*data["pos"])
@@ -86,134 +89,22 @@ class network_conn():
 				self.logger.debug("R: Création de l'entité %s a %s appartenant a %s", data["entity"], data["pos"], self.Player_list[data["from"]].name)
 
 	def move_entity(self, entity, pos=(0, 0)):
-		for Player in self.Player_list.values():
-			for Entity in Player.Entity:
-				if Entity == entity: #TODO Vérifié que le mouvement est valide
-					self.logger.debug("S: Deplacement de %s a %s", Entity.uuid, (pos[0], pos[1]))
-					self.mqtt.publish(self.room_uuid, '{ "cmd":"entity_move", "from":"%s", "entity":"%s", "pos": [%s, %s] }'%(self.player_uuid, Entity.uuid, pos[0], pos[1])) # Envoi du deplacement
-					Entity.setpos(pos[0], pos[1])
+		self.mqtt.publish(self.room_uuid, '{ "cmd":"entity_move", "from":"%s", "entity":"%s", "pos": [%s, %s] }'%(self.player_uuid, entity.uuid, pos[0], pos[1])) # Envoi du deplacement
 		
 	def create_entity(self, ID, Joueur_uuid, Entity_uuid="", pos=(0, 0)):
 		self.mqtt.publish(self.room_uuid, '{ "cmd":"entity_create", "from":"%s", "entity":"%s", "ID": %s, "pos": [%s, %s] }'%(Joueur_uuid, Entity_uuid, ID, pos[0], pos[1])) # Envoi de la création
+
 		
+	def join_room(self, room_uuid):
+		if self.room_uuid != "":
+			self.mqtt.publish(self.room_uuid, '{ "info":"player_disconnected", "uuid":"%s"}'%(self.player_uuid, ))
+			self.mqtt.unsubscribe(self.room_uuid)
+		self.room_uuid = self.topic+room_uuid
+		self.logger.info("MQTT Subscrib to %s", self.room_uuid)
+		self.mqtt.subscribe(self.room_uuid)
+		self.mqtt.publish(self.room_uuid, '{ "info":"player_connected", "uuid":"%s", "name":"%s" }'%(self.player_uuid, self.name)) # Envoi d'un message sur le salon prevenant de mon arrivée
+		self.Player_list[self.player_uuid] = CPlayer(self.player_uuid) # Création du joueur en lui meme
+		self.Player_list[self.player_uuid].name = self.name
+		self.room_joined = True
 		
-	def process_pipe(self):
-		if not self.pipe_has_data():
-			return False
-		
-		data = self.pipe.recv()
-		
-		self.logger.debug("Recv data: %s"%(data, ))
-		
-		if data["cmd"] == "login":
-			if data["status"] == "ok":
-				self.loginok = True
-				self.player_uuid = data["uuid"]
-				self.logger.info("Login OK")
-				return "login_ok"
-			if data["status"] == "nok":
-				self.loginok = False
-				self.logger.error("Login Error")
-				return "login_nok"
-		
-		if data["cmd"] == "join_room":
-			if data["status"] == "ok":
-				self.mqtt.on_connect = self._mqtt_on_connect
-				self.mqtt.on_message = self._mqtt_on_message
-				self.mqtt.connect(data["server"][0], data["server"][1], 60)
-				self.mqtt.loop_start()
-				self.room_uuid = data["topic"]
-				self.logger.info("Starting MQTT loop")
-				return "room_ok"
-			if data["status"] == "nok":
-				self.room_joined = False
-				return "room_nok"
-		
-	def pipe_has_data(self):
-		return self.pipe.poll()
 
-	def close(self):
-		self.pipe.send({"cmd":"close"})
-		self.mqtt.disconnect()
-		self.mqtt.loop_stop()
-		self.pipe.close()
-
-
-def network_packet_decode(logger, data, pipe):
-	data = json.loads(data.decode("utf-8"))
-	pipe.send(data)
-	return True
-	
-	
-def pipe_packet_decode(logger, data, sock):
-	if data["cmd"] == "close":
-		return False
-		
-	sock.sendall( json.dumps(data).encode("utf-8") )
-	return True
-
-
-def handle(pipe, address, port):
-	import logging
-	logging.basicConfig(level=logging.DEBUG)
-	logger = logging.getLogger("network-%s:%s" % (address,port))
-	data_in_waiting = b""
-	data_complete = False
-
-	try:
-		logger.debug("Connection de %s:%s" % (address,port))
-		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		sock.connect((address, port))
-		
-		running = True
-		while running:
-			
-			fno_to_read = select.select([sock, pipe], [], [], 0.5)
-
-			for to_read in fno_to_read[0]:
-				if to_read == sock:
-					data = sock.recv(1)
-					if data == b"":
-						logger.debug("Socket fermée par le partenaire")
-						running = False
-						break
-						
-					if data == b"{":
-						data_in_waiting = data
-						data_complete = False
-					elif data == b"}":
-						data_in_waiting += data
-						data_complete = True
-					else:
-						data_in_waiting += data
-					
-					if data_complete:
-						if not network_packet_decode(logger, data_in_waiting, pipe):
-							running = False
-							break
-							
-				if to_read == pipe:
-					if not pipe_packet_decode(logger, pipe.recv(), sock):
-						running = False
-						break
-
-			if pipe.closed:
-				running = False
-
-	except:
-		logger.exception("Probleme de requete")
-	finally:
-		logger.debug("Fermeture de la socket")
-		sock.close()
-
-
-def start(addresse, port):
-	parent_conn, child_conn = Pipe()
-	
-	process = multiprocessing.Process(target=handle, args=(child_conn, addresse, port))
-	process.daemon = True
-	process.start()
-	
-	logging.debug("Processus réseau démarré %r", process)
-	
-	return(parent_conn)

@@ -35,11 +35,8 @@ def run(Display, network, map_name):
 	Scheduler = pygame.time.Clock()
 	
 	logging.info("Tentative de connection...")
-	
-	network.login("romalb47", "12345")
-	
+		
 	while True:
-		network.process_pipe()
 		if network.loginok:
 			break
 		time.sleep(0.1)
@@ -49,7 +46,6 @@ def run(Display, network, map_name):
 	network.join_room("serdtfyugiohjpk")
 	
 	while True:
-		network.process_pipe()
 		if network.room_joined:
 			break
 		time.sleep(0.1)
@@ -134,8 +130,6 @@ def run(Display, network, map_name):
 		Pos_inversé = (-Pos_Ecran_Actuelle[0], -Pos_Ecran_Actuelle[1])
 		Display.blit(Maps_Surface, Pos_inversé)
 		
-		if network.pipe_has_data():
-			network.process_pipe()
 		
 		Scheduler.tick_busy_loop(int(config.CFG["screen.fps"]))
 

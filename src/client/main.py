@@ -50,17 +50,14 @@ if __name__ == "__main__":
 	
 	logging.info("Lancement du jeu...")
 	
-	if len(sys.argv) > 1 :
-		map_name = sys.argv[1]
-	else:
-		map_name = "pierre"
+	map_name = "pierre"
 	
 #	maps_edit.run(Display, map_name, (int(sys.argv[2]), int(sys.argv[3])))
-
-
 	
 	logging.info("Connection...")
-	net = network.network_conn("localhost", 9000)
+	net = network.network_conn( ("azuras.net", 1883) )#("192.168.40.236", 1883) )
+
+	net.login("tacticaldays", "123456password")
 
 	game.run(Display, net, map_name)
 	
